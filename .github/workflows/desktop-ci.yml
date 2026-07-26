@@ -56,9 +56,13 @@ jobs:
           cargo fmt --check
           cargo clippy -- -D warnings
 
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Debug build (verifies bundle without publishing)
-        run: npm run tauri build -- --debug
+      # `tauri build` (bundling an installer) additionally needs frontend/out, a static export of
+      # the Next.js app. That export isn't wired up yet: frontend/next.config.ts currently builds
+      # "standalone" for the Docker/Kubernetes web target, and reconciling the two frontend build
+      # outputs is tracked for Phase 1 (see desktop/README.md#building-an-installer and
+      # docs/18-roadmap.md). `cargo clippy` above already compiles every crate, so this is Phase
+      # 0's real compile gate; re-add a `tauri build`/`tauri build --debug` step here once the
+      # static export exists.
+      - name: Verify Cargo package builds
+        working-directory: desktop/src-tauri
+        run: cargo build --locked
