@@ -56,5 +56,9 @@ jobs:
           cargo fmt --check
           cargo clippy -- -D warnings
 
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
       - name: Debug build (verifies bundle without publishing)
         run: npm run tauri build -- --debug
