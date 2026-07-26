@@ -22,7 +22,9 @@ public sealed partial class SemVer : ValueObject, IComparable<SemVer>
     {
         var match = VersionPattern().Match(value);
         if (!match.Success)
+        {
             throw new FormatException($"'{value}' is not a valid semantic version.");
+        }
 
         return new SemVer(
             int.Parse(match.Groups["major"].Value),
@@ -33,11 +35,20 @@ public sealed partial class SemVer : ValueObject, IComparable<SemVer>
 
     public int CompareTo(SemVer? other)
     {
-        if (other is null) return 1;
+        if (other is null)
+        {
+            return 1;
+        }
         var byMajor = Major.CompareTo(other.Major);
-        if (byMajor != 0) return byMajor;
+        if (byMajor != 0)
+        {
+            return byMajor;
+        }
         var byMinor = Minor.CompareTo(other.Minor);
-        if (byMinor != 0) return byMinor;
+        if (byMinor != 0)
+        {
+            return byMinor;
+        }
         return Patch.CompareTo(other.Patch);
     }
 
