@@ -16,6 +16,8 @@ public sealed class TestDbContext(DbContextOptions<TestDbContext> options) : DbC
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+
         modelBuilder.Entity<HermesInstance>(builder =>
         {
             builder.Property(i => i.Version)

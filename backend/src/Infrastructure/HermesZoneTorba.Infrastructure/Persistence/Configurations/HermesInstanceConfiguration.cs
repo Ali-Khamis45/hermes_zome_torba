@@ -14,6 +14,8 @@ public sealed class HermesInstanceConfiguration : IEntityTypeConfiguration<Herme
 {
     public void Configure(EntityTypeBuilder<HermesInstance> builder)
     {
+        ArgumentNullException.ThrowIfNull(builder);
+
         builder.ToTable("hermes_instances");
         builder.HasKey(i => i.Id);
         builder.Property(i => i.Id).ValueGeneratedNever();

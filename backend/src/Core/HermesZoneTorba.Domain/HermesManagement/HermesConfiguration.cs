@@ -30,11 +30,17 @@ public sealed class HermesConfiguration : ValueObject
         string workingDirectory)
     {
         if (string.IsNullOrWhiteSpace(defaultModel))
+        {
             throw new ArgumentException("A default model must be specified.", nameof(defaultModel));
+        }
         if (maxConcurrentTasks <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(maxConcurrentTasks), "Must allow at least one concurrent task.");
+        }
         if (string.IsNullOrWhiteSpace(workingDirectory))
+        {
             throw new ArgumentException("A working directory must be specified.", nameof(workingDirectory));
+        }
 
         Provider = provider;
         DefaultModel = defaultModel;
@@ -52,6 +58,8 @@ public sealed class HermesConfiguration : ValueObject
         yield return ResourceLimits;
         yield return WorkingDirectory;
         foreach (var tool in ToolsEnabled.OrderBy(t => t, StringComparer.Ordinal))
+        {
             yield return tool;
+        }
     }
 }

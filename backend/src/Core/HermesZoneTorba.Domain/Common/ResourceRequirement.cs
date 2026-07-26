@@ -19,11 +19,17 @@ public sealed class ResourceRequirement : ValueObject
     public ResourceRequirement(long minimumRamBytes, long recommendedRamBytes, long? minimumVramBytes, long diskBytes)
     {
         if (minimumRamBytes <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(minimumRamBytes), "Minimum RAM must be positive.");
+        }
         if (recommendedRamBytes < minimumRamBytes)
+        {
             throw new ArgumentOutOfRangeException(nameof(recommendedRamBytes), "Recommended RAM cannot be below the minimum.");
+        }
         if (diskBytes < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(diskBytes), "Disk requirement cannot be negative.");
+        }
 
         MinimumRamBytes = minimumRamBytes;
         RecommendedRamBytes = recommendedRamBytes;

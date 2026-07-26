@@ -31,7 +31,9 @@ public sealed class HermesInstance : AggregateRoot<Guid>
     public static HermesInstance BeginInstall(Guid id, SemVer? requestedVersion, string installPath)
     {
         if (string.IsNullOrWhiteSpace(installPath))
+        {
             throw new ArgumentException("An install path is required.", nameof(installPath));
+        }
 
         var instance = new HermesInstance(id)
         {
@@ -46,7 +48,9 @@ public sealed class HermesInstance : AggregateRoot<Guid>
     public void CompleteInstall(SemVer installedVersion)
     {
         if (Status != InstanceStatus.Installing)
+        {
             throw new InvalidHermesStateTransitionException(Status, nameof(CompleteInstall));
+        }
 
         Version = installedVersion ?? throw new ArgumentNullException(nameof(installedVersion));
         Status = InstanceStatus.Stopped;
@@ -57,7 +61,9 @@ public sealed class HermesInstance : AggregateRoot<Guid>
     public void FailInstall(string reason)
     {
         if (Status != InstanceStatus.Installing)
+        {
             throw new InvalidHermesStateTransitionException(Status, nameof(FailInstall));
+        }
 
         Status = InstanceStatus.Faulted;
         LastFaultReason = reason;
@@ -67,7 +73,9 @@ public sealed class HermesInstance : AggregateRoot<Guid>
     public void Configure(HermesConfiguration configuration)
     {
         if (Status is InstanceStatus.Installing or InstanceStatus.Uninstalling)
+        {
             throw new InvalidHermesStateTransitionException(Status, nameof(Configure));
+        }
 
         Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         Raise(new HermesConfigurationChanged(Id, DateTimeOffset.UtcNow));
@@ -76,9 +84,13 @@ public sealed class HermesInstance : AggregateRoot<Guid>
     public void Start()
     {
         if (Status is not (InstanceStatus.Stopped or InstanceStatus.Faulted))
+        {
             throw new InvalidHermesStateTransitionException(Status, nameof(Start));
+        }
         if (Configuration is null)
+        {
             throw new HermesConfigurationRequiredException();
+        }
 
         Status = InstanceStatus.Running;
         LastFaultReason = null;
@@ -90,7 +102,9 @@ public sealed class HermesInstance : AggregateRoot<Guid>
         if (Status is not (InstanceStatus.Running or InstanceStatus.Starting))
         {
             if (Status == InstanceStatus.Stopped)
+            {
                 return; // idempotent
+            }
 
             throw new InvalidHermesStateTransitionException(Status, nameof(Stop));
         }
@@ -118,7 +132,9 @@ public sealed class HermesInstance : AggregateRoot<Guid>
     public void CompleteRepair(string summary)
     {
         if (Status != InstanceStatus.Repairing)
+        {
             throw new InvalidHermesStateTransitionException(Status, nameof(CompleteRepair));
+        }
 
         Status = InstanceStatus.Stopped;
         LastFaultReason = null;
@@ -128,7 +144,9 @@ public sealed class HermesInstance : AggregateRoot<Guid>
     public void BeginRepair()
     {
         if (Status != InstanceStatus.Faulted)
+        {
             throw new InvalidHermesStateTransitionException(Status, nameof(BeginRepair));
+        }
 
         Status = InstanceStatus.Repairing;
     }
