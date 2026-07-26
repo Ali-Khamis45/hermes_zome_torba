@@ -1,0 +1,21 @@
+{
+  "id": "com.hermeszonetorba.plugins.discord",
+  "name": "Discord Notifications",
+  "version": "0.1.0",
+  "hztApiVersion": "^1.0.0",
+  "entryPoint": "dist/index.js",
+  "runtime": "node-sandbox",
+  "permissions": {
+    "required": ["notifications.send", "network.egress:discord.com"],
+    "optional": ["memory.read"]
+  },
+  "configSchema": "config.schema.json",
+  "lifecycle": {
+    "install": "scripts/install.js",
+    "uninstall": "scripts/uninstall.js",
+    "healthCheck": "scripts/health-check.js"
+  },
+  "dependencies": {
+    "sdk": "@hzt/plugin-sdk@^1.0.0"
+  }
+}

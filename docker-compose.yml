@@ -1,0 +1,105 @@
+name: hermes-zone-torba
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: hzt-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hzt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hzt_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-hzt}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - hzt-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hzt}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+
+  redis:
+    image: redis:7-alpine
+    container_name: hzt-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - hzt-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: hzt-qdrant
+    restart: unless-stopped
+    ports:
+      - "${QDRANT_HTTP_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
+    volumes:
+      - hzt-qdrantdata:/qdrant/storage
+    logging: *default-logging
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: hzt-otel-collector
+    restart: unless-stopped
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./infrastructure/docker/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+    logging: *default-logging
+
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/backend.Dockerfile
+    container_name: hzt-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB:-hzt};Username=${POSTGRES_USER:-hzt};Password=${POSTGRES_PASSWORD:-hzt_dev_password}
+      ConnectionStrings__Redis: redis:6379
+      Otlp__Endpoint: http://otel-collector:4317
+    ports:
+      - "${API_PORT:-5080}:8080"
+    logging: *default-logging
+
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/frontend.Dockerfile
+    container_name: hzt-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5080}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    logging: *default-logging
+
+volumes:
+  hzt-pgdata:
+  hzt-redisdata:
+  hzt-qdrantdata:

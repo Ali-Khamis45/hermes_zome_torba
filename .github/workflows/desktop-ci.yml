@@ -1,0 +1,60 @@
+name: Desktop CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - "desktop/**"
+      - ".github/workflows/desktop-ci.yml"
+  push:
+    branches: [develop, main]
+    paths:
+      - "desktop/**"
+
+concurrency:
+  group: desktop-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-latest
+          - platform: macos-latest
+          - platform: ubuntu-22.04
+    runs-on: ${{ matrix.platform }}
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux system dependencies (Tauri)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf build-essential
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: "npm"
+          cache-dependency-path: desktop/package-lock.json
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Rust checks
+        working-directory: desktop/src-tauri
+        run: |
+          cargo fmt --check
+          cargo clippy -- -D warnings
+
+      - name: Debug build (verifies bundle without publishing)
+        run: npm run tauri build -- --debug

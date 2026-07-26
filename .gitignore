@@ -1,0 +1,60 @@
+# === .NET / Backend ===
+backend/**/bin/
+backend/**/obj/
+backend/**/*.user
+backend/**/*.suo
+**/[Dd]ebug/
+**/[Rr]elease/
+*.dll
+*.pdb
+.vs/
+
+# === Node / Frontend / Desktop ===
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+.turbo/
+.vercel/
+
+# === Tauri / Rust ===
+desktop/src-tauri/target/
+Cargo.lock
+
+# === Environment & secrets ===
+.env
+.env.*
+!.env.example
+*.pfx
+*.pem
+secrets.json
+appsettings.*.local.json
+
+# === Databases / local state ===
+*.db
+*.sqlite
+*.sqlite3
+.data/
+pgdata/
+
+# === Logs ===
+logs/
+*.log
+npm-debug.log*
+
+# === IDE ===
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# === Test / coverage ===
+coverage/
+TestResults/
+*.trx
+
+# === Misc build artifacts ===
+*.tgz
+.cache/

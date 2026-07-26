@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hzt.dev/protocol/agent-message.schema.json",
+  "title": "AgentMessage",
+  "description": "Envelope for every message exchanged between the backend and a supervised agent process over stdio/socket. See core/README.md and docs/05-ai-supervisor.md.",
+  "type": "object",
+  "required": ["id", "type", "occurredOn", "payload"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique id for this message."
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Id of the originating request this message is a response to, if any."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["heartbeat", "task-request", "task-result", "log", "fault"],
+      "description": "Discriminator selecting which sibling schema `payload` conforms to."
+    },
+    "occurredOn": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "protocolVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Shape determined by `type` — see heartbeat.schema.json, task-request.schema.json, task-result.schema.json."
+    }
+  },
+  "additionalProperties": false
+}

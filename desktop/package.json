@@ -1,0 +1,22 @@
+{
+  "name": "hzt-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hermes Zone Torba desktop shell (Tauri) — tray, native OS hooks, background daemon. See docs/adr/0003-tauri-over-electron.md.",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-shell": "^2.3.5",
+    "@tauri-apps/plugin-notification": "^2.3.3",
+    "@tauri-apps/plugin-updater": "^2.10.1",
+    "@tauri-apps/plugin-process": "^2.3.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
+    "typescript": "^5.9.0"
+  }
+}

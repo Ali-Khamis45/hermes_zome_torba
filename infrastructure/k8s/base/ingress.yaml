@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hzt-ingress
+  namespace: hermes-zone-torba
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - app.hzt.example.com
+        - api.hzt.example.com
+      secretName: hzt-tls
+  rules:
+    - host: app.hzt.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hzt-web
+                port:
+                  number: 80
+    - host: api.hzt.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hzt-api
+                port:
+                  number: 80

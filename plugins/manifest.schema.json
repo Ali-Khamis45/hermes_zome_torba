@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hzt.dev/plugins/manifest.schema.json",
+  "title": "PluginManifest",
+  "description": "Schema every plugin's manifest.json must conform to. See docs/10-plugin-system.md#manifest.",
+  "type": "object",
+  "required": ["id", "name", "version", "hztApiVersion", "entryPoint", "runtime", "permissions"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$",
+      "description": "Reverse-DNS unique identifier, immutable across versions, e.g. com.hermeszonetorba.plugins.discord."
+    },
+    "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$"
+    },
+    "hztApiVersion": {
+      "type": "string",
+      "description": "SemVer range this plugin declares compatibility with, e.g. '^1.0.0'."
+    },
+    "entryPoint": { "type": "string" },
+    "runtime": {
+      "type": "string",
+      "enum": ["node-sandbox", "wasm"],
+      "description": "Native/unsandboxed runtimes are not supported for third-party plugins — see docs/adr/0005-plugin-sandbox-model.md."
+    },
+    "permissions": {
+      "type": "object",
+      "required": ["required"],
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Capability strings that must be granted for install to complete, e.g. 'notifications.send', 'network.egress:discord.com'."
+        },
+        "optional": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Additional capabilities the plugin can request later; default to denied."
+        }
+      },
+      "additionalProperties": false
+    },
+    "configSchema": {
+      "type": "string",
+      "description": "Path to a JSON Schema file describing this plugin's user-configurable settings."
+    },
+    "lifecycle": {
+      "type": "object",
+      "properties": {
+        "install": { "type": "string" },
+        "uninstall": { "type": "string" },
+        "healthCheck": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "dependencies": {
+      "type": "object",
+      "properties": {
+        "sdk": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "signature": {
+      "type": "string",
+      "description": "Base64 detached signature over the packaged artifact — see docs/10-plugin-system.md#trust-model."
+    }
+  },
+  "additionalProperties": false
+}

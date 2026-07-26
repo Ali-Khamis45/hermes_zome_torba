@@ -1,0 +1,86 @@
+# See docs/17-deployment.md#kubernetes-enterprise-phase-4. Assumes managed Postgres/Redis/vector
+# store external to the cluster (connection strings injected via the hzt-api-secrets Secret) —
+# this base does not run stateful data services in-cluster.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hzt-api
+  namespace: hermes-zone-torba
+  labels:
+    app.kubernetes.io/name: hzt-api
+    app.kubernetes.io/part-of: hermes-zone-torba
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hzt-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hzt-api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/ali-khamis45/hermes_zome_torba-api:latest
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ConnectionStrings__Default
+              valueFrom:
+                secretKeyRef:
+                  name: hzt-api-secrets
+                  key: connection-string
+            - name: ConnectionStrings__Redis
+              valueFrom:
+                secretKeyRef:
+                  name: hzt-api-secrets
+                  key: redis-connection-string
+            - name: Jwt__SigningKey
+              valueFrom:
+                secretKeyRef:
+                  name: hzt-api-secrets
+                  key: jwt-signing-key
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+      # Migrations run as a pre-deploy Job, not on container start — see
+      # docs/17-deployment.md#zero-downtime-migrations.
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hzt-api
+  namespace: hermes-zone-torba
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hzt-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

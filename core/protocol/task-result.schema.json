@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hzt.dev/protocol/task-result.schema.json",
+  "title": "TaskResultPayload",
+  "description": "Response to a TaskRequestPayload with the same taskId — see task-request.schema.json.",
+  "type": "object",
+  "required": ["taskId", "status"],
+  "properties": {
+    "taskId": { "type": "string", "format": "uuid" },
+    "status": {
+      "type": "string",
+      "enum": ["succeeded", "failed", "cancelled", "timed-out"]
+    },
+    "output": {
+      "type": "object",
+      "description": "Task-type-specific result data, present when status is 'succeeded'."
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "message": { "type": "string" },
+        "code": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

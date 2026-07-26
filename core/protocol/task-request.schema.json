@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hzt.dev/protocol/task-request.schema.json",
+  "title": "TaskRequestPayload",
+  "description": "A unit of work dispatched to a supervised agent process — see docs/13-workflows.md for how workflow actions map to task requests against built-in agents.",
+  "type": "object",
+  "required": ["taskId", "taskType", "input"],
+  "properties": {
+    "taskId": { "type": "string", "format": "uuid" },
+    "taskType": {
+      "type": "string",
+      "description": "e.g. 'terminal.execute', 'file.read', 'browser.navigate' — namespaced per agent."
+    },
+    "input": {
+      "type": "object",
+      "description": "Task-type-specific arguments."
+    },
+    "timeoutSeconds": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 60
+    },
+    "requiresApproval": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by the backend per docs/11-security.md#approval-workflow before dispatch."
+    }
+  },
+  "additionalProperties": false
+}

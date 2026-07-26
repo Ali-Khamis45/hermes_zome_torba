@@ -1,0 +1,22 @@
+# Solo/early-stage ownership — everything routes to the repo owner for now. Once the contributor
+# base grows past one person, replace @Ali-Khamis45 below with GitHub teams
+# (@hermes-zone-torba/backend-team, etc.) scoped per area, per docs/15-coding-standards.md.
+
+# Default owners for everything not matched below.
+*                               @Ali-Khamis45
+
+/backend/                      @Ali-Khamis45
+/backend/**/SecurityLayer/     @Ali-Khamis45
+/backend/**/*Auth*             @Ali-Khamis45
+
+/frontend/                     @Ali-Khamis45
+/desktop/                      @Ali-Khamis45
+
+/plugins/                      @Ali-Khamis45
+/sdk/                          @Ali-Khamis45
+
+/docs/11-security.md           @Ali-Khamis45
+/infrastructure/               @Ali-Khamis45
+/.github/workflows/            @Ali-Khamis45
+
+/docs/                         @Ali-Khamis45

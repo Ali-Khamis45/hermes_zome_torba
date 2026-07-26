@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capabilities granted to the main window's WebView. Tauri v2's default-deny model means every plugin/command surface used from the frontend must be listed explicitly here — see docs/11-security.md for why HZT treats this the same as the plugin permission model.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-close",
+    "shell:allow-open",
+    "notification:default",
+    "updater:default",
+    "process:default"
+  ]
+}

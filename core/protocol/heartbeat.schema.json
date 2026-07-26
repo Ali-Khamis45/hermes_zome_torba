@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.hzt.dev/protocol/heartbeat.schema.json",
+  "title": "HeartbeatPayload",
+  "description": "Liveness signal an agent process emits on a configured interval. Consumed by the AI Supervisor — see docs/05-ai-supervisor.md#signal-sources.",
+  "type": "object",
+  "required": ["status"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["idle", "busy", "degraded"]
+    },
+    "activeTaskCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "resourceUsage": {
+      "type": "object",
+      "properties": {
+        "cpuPercent": { "type": "number", "minimum": 0 },
+        "memoryBytes": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,103 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  push:
+    branches: [develop, main]
+    paths:
+      - "backend/**"
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: hzt
+          POSTGRES_PASSWORD: hzt_ci_password
+          POSTGRES_DB: hzt_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U hzt"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore backend/HermesZoneTorba.slnx
+
+      - name: Format check
+        run: dotnet format backend/HermesZoneTorba.slnx --verify-no-changes --severity warn
+
+      - name: Build
+        run: dotnet build backend/HermesZoneTorba.slnx --no-restore -c Release
+
+      - name: Unit tests
+        run: >
+          dotnet test backend/HermesZoneTorba.slnx --no-build -c Release
+          --filter "Category!=Integration"
+          --logger "trx;LogFileName=unit-tests.trx"
+          --collect:"XPlat Code Coverage"
+
+      - name: Integration tests
+        env:
+          ConnectionStrings__Default: "Host=localhost;Port=5432;Database=hzt_test;Username=hzt;Password=hzt_ci_password"
+          ConnectionStrings__Redis: "localhost:6379"
+        run: >
+          dotnet test backend/HermesZoneTorba.slnx --no-build -c Release
+          --filter "Category=Integration"
+          --logger "trx;LogFileName=integration-tests.trx"
+
+      - name: Architecture tests
+        run: dotnet test backend/HermesZoneTorba.slnx --no-build -c Release --filter "Category=Architecture"
+
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/**/*.trx
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: dotnet list package vulnerabilities
+        run: |
+          dotnet restore backend/HermesZoneTorba.slnx
+          dotnet list backend/HermesZoneTorba.slnx package --vulnerable --include-transitive | tee vuln.log
+          ! grep -q "has the following vulnerable packages" vuln.log
