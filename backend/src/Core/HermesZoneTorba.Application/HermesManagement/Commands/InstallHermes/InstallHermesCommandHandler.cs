@@ -18,6 +18,8 @@ public sealed class InstallHermesCommandHandler(
 {
     public async Task<InstallHermesResult> Handle(InstallHermesCommand request, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         var requestedVersion = string.IsNullOrWhiteSpace(request.RequestedVersion)
             ? null
             : SemVer.Parse(request.RequestedVersion);
